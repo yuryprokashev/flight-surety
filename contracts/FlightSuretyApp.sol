@@ -56,6 +56,10 @@ contract FlightSuretyApp {
 
     uint private registrationFee;
 
+    event AirlineRegistered(address airlineAddress);
+    event AirlinePaidRegistrationFee(address airlineAddress, uint id, bool isVoter);
+    event VoteCounted(bool isConsensusReached, uint voteCount, uint totalCount);
+
  
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -79,17 +83,14 @@ contract FlightSuretyApp {
 
     modifier verifyCallerIsRegisteredAirline(){
         uint airlinesCount = dataContract.getAirlinesCount();
+        // Below call will fail, b/c dataContract.getAirline has modifies, that checks if the airline exists
         (address _address, uint id, bool isVoter) = dataContract.getAirline(msg.sender);
-
-        if(airlinesCount <= AIRLINES_COUNT_TO_REQUIRE_CONSENSUS) {
-            require(id > 0, "Current caller can not invoke this operation, b/c it is not registered airline.");
-        }
         _;
     }
 
     modifier verifyHasAlreadyVoted(){
         uint airlinesCount = dataContract.getAirlinesCount();
-        if(airlinesCount > AIRLINES_COUNT_TO_REQUIRE_CONSENSUS) {
+        if(airlinesCount >= AIRLINES_COUNT_TO_REQUIRE_CONSENSUS) {
             bool hasAlreadyVoted = false;
             for(uint i = 0; i < uniqueVoters.length; i++){
                 if(uniqueVoters[i] == msg.sender){
@@ -131,10 +132,6 @@ contract FlightSuretyApp {
         dataContract.createAirline(contractOwner, true);
     }
 
-    /********************************************************************************************/
-    /*                                       UTILITY FUNCTIONS                                  */
-    /********************************************************************************************/
-
     function getOperationalStatus
     ()
     public view
@@ -142,10 +139,6 @@ contract FlightSuretyApp {
     {
         return contractIsOperational;
     }
-
-    /********************************************************************************************/
-    /*                                     SMART CONTRACT FUNCTIONS                             */
-    /********************************************************************************************/
 
     function setOperationalStatus
     (bool status)
@@ -162,11 +155,13 @@ contract FlightSuretyApp {
     verifyCallerIsRegisteredAirline
     hasPaidEnough
     returnChangeForExcessToSender
-    external
+    public
     payable
     {
-        msg.sender.transfer(msg.value);
+        address(dataContract).transfer(msg.value);
         dataContract.setAirlineIsVoter(msg.sender, true);
+        (address _address, uint id, bool isVoter) = dataContract.getAirline(msg.sender);
+        emit AirlinePaidRegistrationFee(_address, id, isVoter);
     }
   
    /**
@@ -175,27 +170,28 @@ contract FlightSuretyApp {
     */
     function registerAirline
     (address _address)
-    external
+    public
     verifyIsOperational
     verifyCallerIsRegisteredAirline
     verifyHasPaidRegistrationFee
     verifyHasAlreadyVoted
-    returns(bool success, uint256 votes)
     {
         uint airlinesCount = dataContract.getAirlinesCount();
         if(airlinesCount < AIRLINES_COUNT_TO_REQUIRE_CONSENSUS) {
             dataContract.createAirline(_address, false);
-            return (true, 0);
+            emit AirlineRegistered(_address);
         }
         else {
-            if(uniqueVoters.length.mul(SIGNED_UNIQUE_VOTERS_CONSENSUS_MULT) > airlinesCount.mul(TOTAL_VOTERS_CONSENSUS_MULT)){
-                dataContract.createAirline(_address, false);
-                uniqueVoters = new address[](0);
-                return (true, uniqueVoters.length);
+            uniqueVoters.push(msg.sender);
+            if(uniqueVoters.length.mul(SIGNED_UNIQUE_VOTERS_CONSENSUS_MULT) < airlinesCount.mul(TOTAL_VOTERS_CONSENSUS_MULT)){
+                emit VoteCounted(false, uniqueVoters.length, airlinesCount);
             }
             else {
-                uniqueVoters.push(msg.sender);
-                return (false, uniqueVoters.length);
+                dataContract.createAirline(_address, false);
+                uint newAirlinesCount = dataContract.getAirlinesCount();
+                emit VoteCounted(true, uniqueVoters.length, newAirlinesCount);
+                uniqueVoters = new address[](0);
+                emit AirlineRegistered(_address);
             }
         }
     }
@@ -204,6 +200,7 @@ contract FlightSuretyApp {
     (address _address)
     public
     view
+    verifyIsOperational
     returns (address airlineAddress, uint id, bool isVoter)
     {
         return dataContract.getAirline(_address);

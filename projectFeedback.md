@@ -245,3 +245,51 @@ contract("Flight Surety. Airlines Resource", async accounts => {
 });
 ```
 __Looks, like there is some problem with `beforeEach` hook running for the empty `it` block.__
+
+## Truffle test can not catch contract events when using starter code truffle config
+test code:
+```javascript
+it("<registerAirline> Transaction successful increases the vote count, when the consensus is not yet reached", async function () {
+    let voteCount, isConsensusReached;
+    flightSuretyAppContract.VoteCounted().on("data", async event =>{
+        console.log(event);
+        isConsensusReached = event.returnValues.isConsensusReached;
+        voteCount = event.returnValues.voteCount;
+        assert.equal(isConsensusReached, false, "Unexpected success status");
+        assert.equal(voteCount.toNumber(), 2, "Unexpected vote count");
+
+
+    }).on("error", err => {
+        console.log(err);
+        assert.fail(err.message);
+    });
+    try {
+        await flightSuretyAppContract.registerAirline(TEST.fifthAirline, {from: TEST.firstAirline});
+        let airline = await flightSuretyAppContract.getAirline(TEST.fifthAirline);
+        console.log(airline);
+    } catch (e) {
+        console.log(e);
+    }
+});
+```
+starter code truffle.js (test code above does not catch event)
+```javascript
+development: {
+  provider: function() {
+    return new HDWalletProvider(mnemonic, "http://127.0.0.1:8545/", 0, 50);
+  },
+  network_id: '*',
+  gas: 9999999,
+  websockets: true // I added this to starter code, hoping it will catch event. But it did not help.
+}
+```
+my code truffle.js (text code above catches event):
+```javascript
+development_cli: {
+    host: "127.0.0.1",
+    port: 8545,
+    network_id: "*",
+    websockets: true
+},
+```
+__The quesion: HOW. IS. IT. POSSIBLE?__

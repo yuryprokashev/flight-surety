@@ -42,6 +42,11 @@ contract FlightSuretyData {
         _;
     }
 
+    modifier verifyAirlineCreated(address _address) {
+        require(airlines[_address].id > 0, "Airline with given address is not registered");
+        _;
+    }
+
     function getOperationalStatus
     ()
     public
@@ -72,6 +77,7 @@ contract FlightSuretyData {
     (address _address)
     public view
     verifyIsOperational
+    verifyAirlineCreated(_address)
     returns (address airlineAddress, uint id, bool isVoter)
     {
         airlineAddress = _address;
