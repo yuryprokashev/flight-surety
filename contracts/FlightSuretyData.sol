@@ -43,7 +43,7 @@ contract FlightSuretyData {
     mapping(uint => Flight) private flights;
     mapping(bytes32 => uint) flightKeyToId;
     event FlightAvailableForInsurance(uint id);
-    event FlightIsNoAvailableForInsurance(uint id);
+    event FlightIsNotAvailableForInsurance(uint id);
     event FlightDepartureStatusCodeUpdated(uint id, uint8 statusCode);
 
     // Insurance Resource
@@ -70,6 +70,7 @@ contract FlightSuretyData {
     constructor
     ()
     public
+    payable
     {
         contractOwner = msg.sender;
 
@@ -80,6 +81,18 @@ contract FlightSuretyData {
         flightCount = 0;
 
         insuranceCount = 0;
+
+        // Authorizing yourself to call own functions, that can be called
+        // externally and hence require authorization
+        authorizedCallers[address(this)] = true;
+        authorizedCallers[contractOwner] = true;
+
+        // creating the default airline
+        airlinesCount = airlinesCount.add(1);
+        airlines[contractOwner] = Airline({id: airlinesCount, isVoter: true});
+
+        // adding Funds from the contract creator (and first airline) to the Contract
+        address(this).transfer(msg.value);
     }
 
     modifier verifyIsOperational()
@@ -141,6 +154,11 @@ contract FlightSuretyData {
         _;
     }
 
+    modifier verifyContractHasSufficientFunds(uint amountToWithdraw) {
+        require(address(this).balance > amountToWithdraw, "Contract does not have sufficient funds");
+        _;
+    }
+
     // Contract Management Resource
     function getOperationalStatus
     ()
@@ -162,10 +180,21 @@ contract FlightSuretyData {
     function setIsAuthorizedCaller
     (address _address, bool isAuthorized)
     verifyCallerIs(contractOwner)
+    verifyIsOperational
     public
     {
         authorizedCallers[_address] = isAuthorized;
         emit CallerIsAuthorizedUpdate(_address, isAuthorized);
+    }
+
+    function getIsAuthorizedCaller
+    (address _address)
+    verifyIsOperational
+    public
+    view
+    returns (bool)
+    {
+        return authorizedCallers[_address];
     }
 
     // Airline Resource
@@ -222,7 +251,7 @@ contract FlightSuretyData {
     verifyNotDepartedAlready(_departureTimestamp)
     public
     {
-        flightCount.add(1);
+        flightCount = flightCount.add(1);
         bytes32 key = createFlightKey(_airlineAddress, _flight, _departureTimestamp);
         flights[flightCount] = Flight(
             {id: flightCount,
@@ -244,13 +273,15 @@ contract FlightSuretyData {
     verifyFlightExists(_id)
     public
     view
-    returns (uint id, string flight, bytes32 key, address airlineAddress, string memory state, uint8 departureStatusCode, uint updated)
+    returns
+    (uint id, string flight, bytes32 key, address airlineAddress, string memory state, uint departureTimestamp, uint8 departureStatusCode, uint updated)
     {
         id = flights[_id].id;
         flight = flights[_id].flight;
         key = flights[_id].key;
         airlineAddress = flights[_id].airlineAddress;
         departureStatusCode = flights[_id].departureStatusCode;
+        departureTimestamp = flights[_id].departureTimestamp;
         updated = flights[_id].updatedTimestamp;
         if(uint(flights[_id].state) == 0) {
             state = "Available For Insurance";
@@ -262,6 +293,8 @@ contract FlightSuretyData {
 
     function getFlightIdByKey
     (bytes32 _key)
+    verifyIsOperational
+    verifyFlightExists(flights[flightKeyToId[_key]].id)
     external
     view
     returns (uint)
@@ -278,7 +311,7 @@ contract FlightSuretyData {
     {
         flights[_id].state = FlightState.NotAvailableForInsurance;
         flights[_id].updatedTimestamp = block.timestamp;
-        emit FlightIsNoAvailableForInsurance(_id);
+        emit FlightIsNotAvailableForInsurance(_id);
     }
 
     function setAvailableForInsurance
@@ -319,11 +352,12 @@ contract FlightSuretyData {
     function createInsurance
     (uint _flightId, uint _amountPaid, address _owner)
     verifyIsOperational
+    verifyCallerIsAuthorized
     verifyFlightExists(_flightId)
     verifyFlightIsAvailableForInsurance(_flightId)
     external
     {
-        insuranceCount.add(1);
+        insuranceCount = insuranceCount.add(1);
         insurancesById[insuranceCount] = Insurance(
             {id: insuranceCount,
             flightId: _flightId,
@@ -381,7 +415,7 @@ contract FlightSuretyData {
     }
 
     function creditInsurance
-    (uint _id)
+    (uint _id, uint _amountToCredit)
     verifyIsOperational
     verifyCallerIsAuthorized
     verifyInsuranceExists(_id)
@@ -389,8 +423,7 @@ contract FlightSuretyData {
     public
     {
         Insurance memory insurance = insurancesById[_id];
-        uint amountToCredit = insurance.amountPaid.mul(3).div(2);
-        creditedAmounts[insurance.owner] = creditedAmounts[insurance.owner].add(amountToCredit);
+        creditedAmounts[insurance.owner] = creditedAmounts[insurance.owner].add(_amountToCredit);
         insurancesById[_id].state = InsuranceState.Credited;
         emit InsuranceCredited(_id);
     }
@@ -409,8 +442,11 @@ contract FlightSuretyData {
     function withdrawCreditedAmount
     (uint _amountToWithdraw, address _address)
     verifyIsOperational
+    verifyCallerIsAuthorized
     verifyCanBeWithdrawn(_amountToWithdraw, _address)
+    verifyContractHasSufficientFunds(_amountToWithdraw)
     public
+    payable
     {
         creditedAmounts[_address] = creditedAmounts[_address].sub(_amountToWithdraw);
         _address.transfer(_amountToWithdraw);
@@ -419,14 +455,11 @@ contract FlightSuretyData {
 
     // Funds Resource
     function addFunds
-    (uint _amount)
+    ()
     verifyIsOperational
     public
     payable
-    {
-        address(this).transfer(_amount);
-        emit FundsAdded(address(this), _amount);
-    }
+    {}
 
     /**
     * @dev Fallback function for funding smart contract.
@@ -437,7 +470,8 @@ contract FlightSuretyData {
     external
     payable
     {
-        addFunds(msg.value);
+        address(this).transfer(msg.value);
+        emit FundsAdded(address(this), msg.value);
     }
 
 }

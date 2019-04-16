@@ -141,10 +141,6 @@ contract FlightSuretyApp {
         uniqueVotersConsensus = 2;
 
         dataContract = FlightSuretyData(dataContractAddress);
-
-        dataContract.setIsAuthorizedCaller(contractOwner, true);
-
-        dataContract.createAirline(contractOwner, true);
     }
 
     // Contract Management Resource
