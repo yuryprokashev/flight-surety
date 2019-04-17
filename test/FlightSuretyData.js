@@ -45,7 +45,6 @@ contract("Flight Surety Data Unit Tests", async accounts => {
                 TEST.ERROR.CALLER_NOT_CONTRACT_OWNER
             )
         });
-
     });
 
     describe("Contract.getIsAuthorizedCaller/ setIsAuthorizedCaller", async function(){
@@ -99,7 +98,7 @@ contract("Flight Surety Data Unit Tests", async accounts => {
             let airline = await flightSuretyDataContract.getAirline(TEST.secondAirline, {from: TEST.whomever});
             TEST.assertAirline(
                 {
-                    address: TEST.secondAirline,
+                    airlineAddress: TEST.secondAirline,
                     id: '2',
                     isVoter: true
                 },
@@ -168,7 +167,7 @@ contract("Flight Surety Data Unit Tests", async accounts => {
             let airline = await flightSuretyDataContract.getAirline(TEST.firstAirline, {from: TEST.whomever});
             TEST.assertAirline(
                 {
-                    address: TEST.firstAirline,
+                    airlineAddress: TEST.firstAirline,
                     id: "1",
                     isVoter: false
                 },
@@ -406,21 +405,21 @@ contract("Flight Surety Data Unit Tests", async accounts => {
             await flightSuretyDataContract.setOperationalStatus(false, {from: TEST.contractOwner});
             await TEST.asyncTestForError(
                 flightSuretyDataContract.setDepartureStatusCode,
-                [1, TEST.FLIGHT_STATUS.ON_TIME, {from: TEST.contractOwner}],
+                [1, TEST.FLIGHT_STATUS_CODE.ON_TIME, {from: TEST.contractOwner}],
                 TEST.ERROR.CONTRACT_NOT_OPERATIONAL
             );
         });
         it("Flight departure status code can not be set, when the caller is not authorized", async function () {
             await TEST.asyncTestForError(
                 flightSuretyDataContract.setDepartureStatusCode,
-                [1, TEST.FLIGHT_STATUS.LATE_OTHER, {from: TEST.whomever}],
+                [1, TEST.FLIGHT_STATUS_CODE.LATE_OTHER, {from: TEST.whomever}],
                 TEST.ERROR.CALLER_NOT_AUTHORIZED
             );
         });
         it("Flight departure status code can not be set, when the flight does not exists", async function () {
             await TEST.asyncTestForError(
                 flightSuretyDataContract.setDepartureStatusCode,
-                [1, TEST.FLIGHT_STATUS.LATE_OTHER, {from: TEST.contractOwner}],
+                [1, TEST.FLIGHT_STATUS_CODE.LATE_OTHER, {from: TEST.contractOwner}],
                 TEST.ERROR.FLIGHT_NOT_EXIST
             );
         });
@@ -434,14 +433,14 @@ contract("Flight Surety Data Unit Tests", async accounts => {
                         flight: TEST.flightOne.flight,
                         key: key,
                         airline: TEST.firstAirline,
-                        departureStatusCode: TEST.FLIGHT_STATUS.LATE_OTHER,
+                        departureStatusCode: TEST.FLIGHT_STATUS_CODE.LATE_OTHER,
                         departure: TEST.flightOne.departure,
                         state: "Available For Insurance"
                     },
                     actual
                 );
             });
-            await flightSuretyDataContract.setDepartureStatusCode(1, TEST.FLIGHT_STATUS.LATE_OTHER, {from: TEST.contractOwner});
+            await flightSuretyDataContract.setDepartureStatusCode(1, TEST.FLIGHT_STATUS_CODE.LATE_OTHER, {from: TEST.contractOwner});
         });
     });
 
@@ -703,22 +702,5 @@ contract("Flight Surety Data Unit Tests", async accounts => {
             assert.equal(passengerOneAmountBefore.add(withdrawnAmount).eq(passengerOneAmountAfter), true, "Unexpected passenger balance");
         });
 
-    });
-
-    describe("Contract.addFunds", async function(){
-        it("Funds can not be added, when the contract is not operational", async function () {
-            await flightSuretyDataContract.setOperationalStatus(false, {from: TEST.contractOwner});
-            await TEST.asyncTestForError(
-                flightSuretyDataContract.addFunds,
-                [{from: TEST.whomever, value: TEST.withdrawAmount.amount}],
-                TEST.ERROR.CONTRACT_NOT_OPERATIONAL
-            );
-        });
-        it("Funds can be added, when the contract is operational", async function () {
-            let contractBalanceBefore = await TEST.currentBalanceAsBN(flightSuretyDataContract.address);
-            await flightSuretyDataContract.addFunds({from: TEST.veryRichGuy, value: TEST.withdrawAmount.amount});
-            let contractBalanceAfter = await TEST.currentBalanceAsBN(flightSuretyDataContract.address);
-            assert.equal(contractBalanceBefore.add(TEST.toBN(TEST.withdrawAmount.amount)).eq(contractBalanceAfter), true, "Unexpected contract balance")
-        });
     });
 });

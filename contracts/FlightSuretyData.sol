@@ -452,15 +452,6 @@ contract FlightSuretyData {
         _address.transfer(_amountToWithdraw);
         emit AmountWithdrawn(_address, _amountToWithdraw);
     }
-
-    // Funds Resource
-    function addFunds
-    ()
-    verifyIsOperational
-    public
-    payable
-    {}
-
     /**
     * @dev Fallback function for funding smart contract.
     *
@@ -470,8 +461,6 @@ contract FlightSuretyData {
     external
     payable
     {
-        address(this).transfer(msg.value);
         emit FundsAdded(address(this), msg.value);
     }
-
 }

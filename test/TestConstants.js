@@ -35,7 +35,7 @@ module.exports = function (accounts, web3){
             },
             nullAddress: "0x0000000000000000000000000000000000000000",
             assertAirline: function(expected, actual){
-                assert.equal(actual.airlineAddress, expected.address, "Unexpected airline address");
+                assert.equal(actual.airlineAddress, expected.airlineAddress, "Unexpected airline address");
                 assert.equal(actual.id, expected.id, "Unexpected airline id");
                 assert.equal(actual.isVoter, expected.isVoter, "Unexpected isVoter status");
             },
@@ -87,9 +87,25 @@ module.exports = function (accounts, web3){
                 FLIGHT_NOT_AVAILABLE_FOR_INSURANCE: "The flight is not available for insurance",
                 INSURANCE_NOT_EXIST: "Insurance does not exists in the system",
                 INSURANCE_NOT_ACTIVE: "The insurance can not be credited, b/c it is not Active",
-                CREDITED_AMOUNT_TOO_LOW: "The address does not have requested amount of funds to withdraw"
+                CREDITED_AMOUNT_TOO_LOW: "The address does not have requested amount of funds to withdraw",
+                HAS_ALREADY_VOTED: "The caller has already voted",
+                REG_FEE_NOT_PAID: "Airline has to pay registration fee to be able to vote",
+                NOT_ENOUGH_VALUE: "The message value is less than required amount",
+                EXCEED_CAP: "The value exceeds the current cap",
+                INVALID_CONSENSUS_MULTIPLIERS: "Consensus will never be reached, b/c you want it more than 100%"
+
             },
-            FLIGHT_STATUS: {
+            INSURANCE_STATE: {
+                ACTIVE: "Active",
+                EXPIRED: "Expired",
+                CREDITED: "Credited"
+            },
+            FLIGHT_STATE: {
+                AVAILABLE: "Available For Insurance",
+                UNAVAILABLE: "Unavailable For Insurance"
+            },
+            FLIGHT_STATUS_CODE: {
+                UNKNOWN: 0,
                 ON_TIME: 10,
                 LATE_AIRLINE: 20,
                 LATE_WEATHER: 30,
@@ -117,10 +133,30 @@ module.exports = function (accounts, web3){
                 passenger: accounts[7],
                 paid: web3.utils.toWei("1", "ether")
             },
+            insuranceThatExceedCap:{
+                flightId: 1,
+                passenger: accounts[7],
+                paid: web3.utils.toWei("2", "ether")
+            },
             withdrawAmount: {
                 passenger: accounts[9],
                 amount: web3.utils.toWei("0.3", "ether"),
                 amountThatIsMoreThanCurrentCreditedAmount: web3.utils.toWei("2", "ether")
+            },
+            newRegistrationFee: web3.utils.toWei("15", "ether"),
+            newInsuranceCap : web3.utils.toWei("2", "ether"),
+            newConsensusMultipliers: {
+                numerator: 1,
+                denominator: 3
+            },
+            invalidConsensusMultipliers: {
+                numerator: 3,
+                denominator: 2
+            },
+            lessThatRegistrationFee: web3.utils.toWei("5", "ether"),
+            insurancePremiumMultiplier: {
+                numerator: 3,
+                denominator: 2
             }
         }
     } catch (e) {

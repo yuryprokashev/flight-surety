@@ -34,15 +34,15 @@ contract FlightSuretyApp {
     // SafeMath does not support division, so I will trick it with inverse threshold for consensus
     // Here if you want to set 50% of voters as consensus, you need to set:
     // totalVoterConsensus = 1
-    // uniqueVotersConsensus = 2
+    // uniqueVoterConsensus = 2
     // The percentage of voters required to consensus is: totalVoterConsensus / uniqueVotersConsensus
     // Hence in our case it is 50%.
     // Now, if you want to set another threshold, like 60%:
     // totalVoterConsensus = 3;
-    // uniqueVotersConsensus = 5;
+    // uniqueVoterConsensus = 5;
     // But what you would like to have in prod is the method exposed by the contract to modify these...
     uint8 private totalVoterConsensus;
-    uint8 private uniqueVotersConsensus;
+    uint8 private uniqueVoterConsensus;
     event ConsensusMultipliersUpdate(uint8 oldNumerator, uint8 oldDenominator, uint8 newNumerator, uint8 newDenominator);
 
     uint private registrationFee;
@@ -51,10 +51,13 @@ contract FlightSuretyApp {
     uint private insuranceCap;
     event InsuranceCapUpdate(uint oldCap, uint newCap);
 
+    uint8 private insurancePremiumNumerator;
+    uint8 private insurancePremiumDenominator;
+    event InsuranceMultipliersUpdate(uint8 oldNumerator, uint8 oldDenominator, uint8 newNumerator, uint8 newDenominator);
+
     event VoteCounted(bool isConsensusReached, uint voteCount, uint totalCount);
     event RegistrationFeePaid(address airlineAddress, uint fee);
     event AirlineRegistered(address airlineAddress);
-
 
     modifier verifyIsOperational()
     {
@@ -106,7 +109,7 @@ contract FlightSuretyApp {
     modifier returnChangeForExcessToSender(uint requiredAmount)
     {
         _;
-        uint change = msg.value - requiredAmount;
+        uint change = msg.value.sub(requiredAmount);
         msg.sender.transfer(change);
     }
 
@@ -138,7 +141,11 @@ contract FlightSuretyApp {
 
         totalVoterConsensus = 1;
 
-        uniqueVotersConsensus = 2;
+        uniqueVoterConsensus = 2;
+
+        insurancePremiumNumerator = 3;
+
+        insurancePremiumDenominator = 2;
 
         dataContract = FlightSuretyData(dataContractAddress);
     }
@@ -211,10 +218,20 @@ contract FlightSuretyApp {
     public
     {
         uint8 oldNum = totalVoterConsensus;
-        uint8 oldDenom = uniqueVotersConsensus;
-        uniqueVotersConsensus = denominator;
+        uint8 oldDenom = uniqueVoterConsensus;
+        uniqueVoterConsensus = denominator;
         totalVoterConsensus = numerator;
-        emit ConsensusMultipliersUpdate(oldNum, oldDenom, totalVoterConsensus, uniqueVotersConsensus);
+        emit ConsensusMultipliersUpdate(oldNum, oldDenom, totalVoterConsensus, uniqueVoterConsensus);
+    }
+
+    function getConsensusMultipliers
+    ()
+    verifyIsOperational
+    public
+    view
+    returns (uint8 numerator, uint8 denominator)
+    {
+        return (totalVoterConsensus, uniqueVoterConsensus);
     }
 
     // Airline Resource
@@ -227,7 +244,7 @@ contract FlightSuretyApp {
     public
     payable
     {
-        dataContract.addFunds(registrationFee);
+        address(dataContract).transfer(msg.value);
         dataContract.setAirlineIsVoter(msg.sender, true);
         emit RegistrationFeePaid(msg.sender, registrationFee);
     }
@@ -247,7 +264,7 @@ contract FlightSuretyApp {
         }
         else {
             uniqueVoters.push(msg.sender);
-            if(uniqueVoters.length.mul(uniqueVotersConsensus) < airlinesCount.mul(totalVoterConsensus)){
+            if(uniqueVoters.length.mul(uniqueVoterConsensus) < airlinesCount.mul(totalVoterConsensus)){
                 emit VoteCounted(false, uniqueVoters.length, airlinesCount);
             }
             else {
@@ -271,15 +288,38 @@ contract FlightSuretyApp {
     }
 
     // Insurance Resource
+    function setInsurancePremiumMultiplier
+    (uint8 numerator, uint8 denominator)
+    verifyIsOperational
+    verifyCallerIs(contractOwner)
+    public
+    {
+        uint8 oldNum = insurancePremiumNumerator;
+        uint8 oldDenom = insurancePremiumDenominator;
+        insurancePremiumDenominator = denominator;
+        insurancePremiumNumerator = numerator;
+        emit InsuranceMultipliersUpdate(oldNum, oldDenom, insurancePremiumNumerator, insurancePremiumDenominator);
+    }
+
+    function getInsurancePremiumMultiplier
+    ()
+    verifyIsOperational
+    public
+    view
+    returns (uint8 numerator, uint8 denominator)
+    {
+        return (insurancePremiumNumerator, insurancePremiumDenominator);
+    }
+
     function buyInsurance
     (uint _flightId, uint _amountPaid)
     verifyIsOperational
     verifyValueLessThanOrEqualToCap(insuranceCap)
-    returnChangeForExcessToSender(_amountPaid)
     public
+    payable
     {
         dataContract.createInsurance(_flightId, _amountPaid, msg.sender);
-        dataContract.addFunds(_amountPaid);
+        address(dataContract).transfer(msg.value);
     }
 
     function getInsurance
@@ -301,9 +341,19 @@ contract FlightSuretyApp {
         dataContract.createFlight(flight, _departureTimestamp, _airlineAddress);
     }
 
+    function getFlight
+    (uint _id)
+    verifyIsOperational
+    public
+    view
+    returns (uint id, string flight, bytes32 key, address airlineAddress, string memory state, uint departureTimestamp, uint8 departureStatusCode, uint updated)
+    {
+        return dataContract.getFlight(_id);
+    }
+
     function processFlightStatus
-    (address airline, string memory flight, uint256 timestamp, uint8 statusCode)
-    internal
+    (address airline, string flight, uint256 timestamp, uint8 statusCode)
+    public
     {
         bytes32 flightKey = dataContract.createFlightKey(airline, flight, timestamp);
         (uint flightId) = dataContract.getFlightIdByKey(flightKey);
@@ -311,7 +361,8 @@ contract FlightSuretyApp {
         if(statusCode == STATUS_CODE_LATE_AIRLINE) {
             uint[] memory insurancesToCredit = dataContract.getInsurancesByFlight(flightId);
             for(uint i = 0; i < insurancesToCredit.length; i++){
-                dataContract.creditInsurance(insurancesToCredit[i]);
+                (, , , uint amountPaid, ) = dataContract.getInsurance(insurancesToCredit[i]);
+                dataContract.creditInsurance(insurancesToCredit[i], amountPaid.mul(insurancePremiumNumerator).div(insurancePremiumDenominator));
             }
         }
     }
@@ -483,19 +534,30 @@ contract FlightSuretyApp {
     }
 
 // endregion
-
+    /**
+    * @dev Fallback function for funding smart contract.
+    *
+    */
+    function
+    ()
+    external
+    payable
+    {
+        address(this).transfer(msg.value);
+    }
 }
 
 contract FlightSuretyData {
     function setIsAuthorizedCaller(address _address, bool isAuthorized) public;
     function createAirline(address airlineAddress, bool isVoter) public;
-    function addFunds(uint _amount) public;
+    function addFunds(uint _funds) public;
     function getAirlinesCount() public view returns (uint);
     function createInsurance(uint _flightId, uint _amountPaid, address _owner) public;
     function getInsurance(uint _id) public view returns (uint id, uint flightId, string memory state, uint amountPaid, address owner);
     function createFlight(string _code, uint _departureTimestamp, address _airlineAddress) public;
+    function getFlight(uint _id) public view returns (uint id, string flight, bytes32 key, address airlineAddress, string memory state, uint departureTimestamp, uint8 departureStatusCode, uint updated);
     function getInsurancesByFlight(uint _flightId) public view returns (uint[]);
-    function creditInsurance(uint _id) public;
+    function creditInsurance(uint _id, uint _amountToCredit) public;
     function getAirline(address _address) public view returns (address, uint, bool);
     function setAirlineIsVoter(address _address, bool isVoter) public;
     function setDepartureStatusCode(uint _flightId, uint8 _statusCode) public;
