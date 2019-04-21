@@ -50,7 +50,16 @@ export default class Contract {
         self.flightSuretyApp.methods
             .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
             .send({ from: self.owner}, (error, result) => {
-                callback(error, payload);
+                callback(error, result);
+            });
+    }
+    registerAirline(address, callback) {
+        let owner = this.owner;
+        console.log(owner);
+        this.flightSuretyApp.methods
+            .registerAirline(address)
+            .send({from: owner}, (error, result) => {
+                callback(error, result);
             });
     }
 }

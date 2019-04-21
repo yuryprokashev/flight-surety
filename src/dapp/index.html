@@ -5,29 +5,171 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>FlightSurety</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 
 <body>
 
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-        <a class="navbar-brand" href="#">FlightSurety</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault"
-            aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </nav>
-
-    <main class="container">
-
-        <div id="display-wrapper" class="top-20">
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+    <a class="navbar-brand" href="#">FlightSurety</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault"
+        aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active" id="contract-resource">
+                <a class="nav-link" href="#">Contract <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item" id="airlines-resource">
+                <a class="nav-link" href="#">Airlines</a>
+            </li>
+            <li class="nav-item" id="flights-resource">
+                <a class="nav-link" href="#">Flights</a>
+            </li>
+            <li class="nav-item" id="insurances-resource">
+                <a class="nav-link" href="#">Insurances</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<!--CONTRACT-->
+<div class="container my-container" id="contract-resource-forms" style="display: block">
+    <div class="row">
+        <div class="col-12">
+            <h1>Contract</h1>
+            <h3>Operational Status</h3>
+            <form>
+                <div class="form-group">
+                    <input type="button" class="btn btn-primary" id="operational-status-get" value="Get Status">
+                </div>
+            </form>
         </div>
-        <div class="row top-20">
-            <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
         </div>
-    </main>
+    </div>
+</div>
 
+<!--AIRLINES-->
+<div class="container my-container" id="airlines-resource-forms" style="display: none">
+    <div class="row">
+        <div class="col-12">
+            <h1>Airlines</h1>
+            <h3>Register Airline</h3>
+            <form>
+                <div class="form-group">
+                    <label class="form">Airline Address</label>
+                    <input type="text" class="form-control" id="airline-address">
+                </div>
+                <div class="form-group">
+                    <input type="button" class="btn btn-primary" id="airline-register" value="Register Airline">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--FLIGHTS-->
+<div class="container my-container" id="flights-resource-forms" style="display: none">
+    <div class="row">
+        <div class="col-12">
+            <h1>Flights</h1>
+            <h3>Register Flight</h3>
+            <form>
+                <div class="form-group">
+                    <label class="form">Flight Code</label>
+                    <input type="text" class="form-control" id="register-flight-flight-code">
+                </div>
+                <div class="form-group">
+                    <label>Airline Address</label>
+                    <input type="text" class = "form-control" id="register-flight-airline-address">
+                </div>
+                <div class="form-group">
+                    <label>Departure Time</label>
+                    <input type="datetime-local" class = "form-control" id="register-flight-departure">
+                </div>
+                <div class="form-group">
+                    <input type="button" class="btn btn-primary" id="register-flight" value="Register Flight">
+                </div>
+            </form>
+            <h3>Refresh Flight Status</h3>
+            <form>
+                <div class="form-group">
+                    <label class="form">Flight Code</label>
+                    <!--<input type="text" class = "form-control" id="flight-number">-->
+                    <select class="form-control" id="flight-code">
+                        <option value="1">SU 1928</option>
+                        <option value="2">LH 4994</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="button" class="btn btn-primary" id="submit-oracle" value="Refresh">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--INSURANCES-->
+<div class="container my-container" id="insurances-resource-forms" style="display: none">
+    <div class="row">
+        <div class="col-12">
+            <h1>Insurances</h1>
+            <h3>Buy Insurance</h3>
+            <form>
+                <div class="form-group">
+                    <label class="form">Flight Code</label>
+                    <!--<input type="text" class = "form-control" id="buy-insurance-flight-code" placeholder="Flight you want to buy insurance">-->
+                    <select class="form-control" id="buy-insurance-flight-code">
+                        <option value="1">SU 1928</option>
+                        <option value="2">LH 4994</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Insurance Premium (Ether)</label>
+                    <input type="number" class = "form-control" id="buy-insurance-paid-amount">
+                </div>
+                <div class="form-group">
+                    <input type="button" class="btn btn-primary" id="buy-insurance" value="Buy">
+                </div>
+            </form>
+            <h3>Check credited amount</h3>
+            <form>
+                <div class="form-group">
+                    <label class="form">Passenger Address</label>
+                    <input type="text" class="form-control" id="get-credited-amount-passenger-address">
+                </div>
+                <div class="form-group">
+                    <input type="button" class="btn btn-primary" id="get-creadited-amount" value="Check Amount">
+                </div>
+            </form>
+            <h3>Withdraw credited amount</h3>
+            <form>
+                <div class="form-group">
+                    <label class="form">Passenger Address</label>
+                    <input type="text" class="form-control" id="withdraw-credited-amount-passenger-address">
+                </div>
+                <div class="form-group">
+                    <label class="form">Amount to Withdraw (Ether)</label>
+                    <input type="number" class="form-control" id="withdraw-credited-amount-amount">
+                </div>
+                <div class="form-group">
+                    <input type="button" class="btn btn-primary" id="withdraw-credited-amount" value="Withdraw Amount">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--CONTENT AREA-->
+<div class="container my-container" id="content-area">
+    <div class="row">
+        <div class="col-12">
+            <h3>Results</h3>
+            <div id="display-wrapper" class="top-20"></div>
+        </div>
+    </div>
+</div>
 </body>
 
 </html>

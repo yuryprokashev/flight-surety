@@ -4,12 +4,12 @@ body {
     background-size: cover;
 }
 
-.container {
-    margin-top: 400px;
+.my-container {
+    margin-top: 80px;
     background-color: #000;
     opacity: 0.9;
     color: #fff;
-    padding: 40px;
+    padding: 20px 40px 20px 40px;
 }
 
 .top-20 {
@@ -25,7 +25,7 @@ section {
 }
 
 .field {
-    font-weight: bold;
+    /*font-weight: bold;*/
     text-align: right;
 }
 
