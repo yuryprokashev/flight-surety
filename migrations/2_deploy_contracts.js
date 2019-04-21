@@ -1,11 +1,16 @@
 const FlightSuretyApp = artifacts.require("FlightSuretyApp");
 const FlightSuretyData = artifacts.require("FlightSuretyData");
 const fs = require('fs');
+const Web3 = require("web3");
 
-module.exports = function(deployer) {
+let Config = JSON.parse(fs.readFileSync("../src/server/config.json"));
+let config = Config['localhost'];
+let web3 = new Web3(new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws')));
+
+module.exports = function(deployer, network, accounts) {
 
     let firstAirline = '0xf17f52151EbEF6C7334FAD080c5704D77216b732';
-    deployer.deploy(FlightSuretyData)
+    deployer.deploy(FlightSuretyData, {value: web3.utils.toWei("10", "ether") })
     .then(() => {
         return deployer.deploy(FlightSuretyApp, FlightSuretyData.address)
                 .then(() => {

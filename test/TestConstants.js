@@ -41,15 +41,15 @@ module.exports = function (accounts, web3){
             },
             flightOne: {
                 flight: "SU 1925",
-                departure: new Date("2019-04-22T10:00:00+03:00").valueOf()/1000
+                departure: (Math.ceil(new Date().valueOf()/1000)) + 24*60*60
             },
             flightTwo: {
                 flight: "SU 2567",
-                departure: new Date("2019-04-22T11:25:00+03:00").valueOf()/1000
+                departure: (Math.ceil(new Date().valueOf()/1000)) + 23*60*60
             },
             flightThatHasDeparted: {
                 flight: "SU 1925",
-                departure: new Date("2019-04-12T10:00:00+03:00").valueOf()/1000
+                departure: (Math.ceil(new Date().valueOf()/1000)) - 2*60*60
             },
             assertFlight: function(expected, actual) {
                 try{
@@ -58,7 +58,7 @@ module.exports = function (accounts, web3){
                     assert.equal(actual.key, expected.key, "Unexpected flight key");
                     assert.equal(actual.airlineAddress, expected.airline, "Unexpected airline address");
                     assert.equal(actual.departureTimestamp.toNumber(), expected.departure, "Unexpected departure timestamp");
-                    assert.equal(actual.departureStatusCode, expected.departureStatusCode, "Unexpected departure status code");
+                    assert.equal(actual.departureStatusCode.toNumber(), expected.departureStatusCode, "Unexpected departure status code");
                     assert.equal(actual.state, expected.state, "Unexpected flight state");
                 } catch (e) {
                     console.log(actual);
@@ -157,6 +157,11 @@ module.exports = function (accounts, web3){
             insurancePremiumMultiplier: {
                 numerator: 3,
                 denominator: 2
+            },
+            oracleAppConfig: {
+                numOracles: 20,
+                statusCodes: [0, 10, 20, 30, 40, 50],
+                airlineStatusCodeProbability: 0.8
             }
         }
     } catch (e) {

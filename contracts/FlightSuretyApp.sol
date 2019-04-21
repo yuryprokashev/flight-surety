@@ -358,6 +358,7 @@ contract FlightSuretyApp {
         bytes32 flightKey = dataContract.createFlightKey(airline, flight, timestamp);
         (uint flightId) = dataContract.getFlightIdByKey(flightKey);
         dataContract.setDepartureStatusCode(flightId, statusCode);
+        dataContract.setUnavailableForInsurance(flightId);
         if(statusCode == STATUS_CODE_LATE_AIRLINE) {
             uint[] memory insurancesToCredit = dataContract.getInsurancesByFlight(flightId);
             for(uint i = 0; i < insurancesToCredit.length; i++){
@@ -484,7 +485,7 @@ contract FlightSuretyApp {
         // Information isn't considered verified until at least MIN_RESPONSES
         // oracles respond with the *** same *** information
         emit OracleReport(airline, flight, timestamp, statusCode);
-        if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
+        if (oracleResponses[key].responses[statusCode].length == MIN_RESPONSES) {
 
             emit FlightStatusInfo(airline, flight, timestamp, statusCode);
 
@@ -561,6 +562,7 @@ contract FlightSuretyData {
     function getAirline(address _address) public view returns (address, uint, bool);
     function setAirlineIsVoter(address _address, bool isVoter) public;
     function setDepartureStatusCode(uint _flightId, uint8 _statusCode) public;
+    function setUnavailableForInsurance(uint flightId) public;
     function getFlightIdByKey(bytes32 key) public view returns (uint);
     function createFlightKey(address _airlineAddress, string memory flightCode, uint timestamp) public returns (bytes32);
 }
