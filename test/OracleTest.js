@@ -118,8 +118,8 @@ contract("FlightSuretyApp", async function(accounts){
         });
 
         it("FetchFlightStatus resolved in LATE_AIRLINE results in two passengers have credited amounts", async function(){
-            let amountOne = await flightSuretyDataContract.getCreditedAmount(TEST.insuranceOne.passenger);
-            let amountTwo = await flightSuretyDataContract.getCreditedAmount(TEST.insuranceFour.passenger);
+            let amountOne = await flightSuretyAppContract.getCreditedAmount(TEST.insuranceOne.passenger);
+            let amountTwo = await flightSuretyAppContract.getCreditedAmount(TEST.insuranceFour.passenger);
             let k = await flightSuretyAppContract.getInsurancePremiumMultiplier();
             let expectedAmountOne = TEST.toBN(TEST.insuranceOne.paid).mul(k.numerator).div(k.denominator);
             let expectedAmountTwo = TEST.toBN(TEST.insuranceFour.paid).mul(k.numerator).div(k.denominator);

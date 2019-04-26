@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity 0.4.24;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
@@ -159,6 +159,13 @@ contract FlightSuretyData {
         _;
     }
 
+
+    modifier verifyAirlineDoesNotExist(address airlineAddress) {
+        require(airlines[airlineAddress].id == 0, "The airline is already registered");
+        _;
+    }
+
+
     // Contract Management Resource
     function getOperationalStatus
     ()
@@ -202,6 +209,7 @@ contract FlightSuretyData {
     (address airlineAddress, bool isVoter)
     verifyIsOperational
     verifyCallerIsAuthorized
+    verifyAirlineDoesNotExist(airlineAddress)
     public
     {
         airlinesCount = airlinesCount.add(1);

@@ -64,20 +64,6 @@ module.exports = class OracleApp {
         });
 
         return reportedStatuses;
-
-        // let statusCounts = [0, 0, 0, 0, 0, 0];
-        // reportedStatuses.forEach(status => {
-        //     let statusIndex = status / 10;
-        //     statusCounts[statusIndex]++;
-        // });
-        //
-        // let maxCount = Math.max(...statusCounts);
-        //
-        // let maxCountIndex = statusCounts.indexOf(maxCount);
-        //
-        // response.statusCode = this._statusCodes[maxCountIndex];
-
-        // return response;
     }
 };
 

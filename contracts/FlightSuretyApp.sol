@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity 0.4.24;
 
 // It's important to avoid vulnerabilities due to numeric overflow bugs
 // OpenZeppelin's SafeMath library, when used correctly, protects agains such bugs
@@ -319,6 +319,7 @@ contract FlightSuretyApp {
     payable
     {
         dataContract.createInsurance(_flightId, _amountPaid, msg.sender);
+        address(this).transfer(msg.value);
         address(dataContract).transfer(msg.value);
     }
 
@@ -358,7 +359,9 @@ contract FlightSuretyApp {
         bytes32 flightKey = dataContract.createFlightKey(airline, flight, timestamp);
         (uint flightId) = dataContract.getFlightIdByKey(flightKey);
         dataContract.setDepartureStatusCode(flightId, statusCode);
-        dataContract.setUnavailableForInsurance(flightId);
+        if(statusCode != STATUS_CODE_UNKNOWN) {
+            dataContract.setUnavailableForInsurance(flightId);
+        }
         if(statusCode == STATUS_CODE_LATE_AIRLINE) {
             uint[] memory insurancesToCredit = dataContract.getInsurancesByFlight(flightId);
             for(uint i = 0; i < insurancesToCredit.length; i++){
@@ -387,7 +390,26 @@ contract FlightSuretyApp {
         );
 
         emit OracleRequest(index, airline, flight, timestamp);
-    } 
+    }
+
+    function getCreditedAmount
+    (address _address)
+    verifyIsOperational
+    public
+    view
+    returns (uint)
+    {
+        return dataContract.getCreditedAmount(_address);
+    }
+
+    function withdrawCreditedAmount
+    (uint _amountToWithdraw, address _address)
+    verifyIsOperational
+    public
+    payable
+    {
+        dataContract.withdrawCreditedAmount(_amountToWithdraw, _address);
+    }
 
 
 // region ORACLE MANAGEMENT
@@ -544,7 +566,7 @@ contract FlightSuretyApp {
     external
     payable
     {
-        address(this).transfer(msg.value);
+
     }
 }
 
@@ -565,4 +587,6 @@ contract FlightSuretyData {
     function setUnavailableForInsurance(uint flightId) public;
     function getFlightIdByKey(bytes32 key) public view returns (uint);
     function createFlightKey(address _airlineAddress, string memory flightCode, uint timestamp) public returns (bytes32);
+    function withdrawCreditedAmount(uint _amountToWithdraw, address _address) public payable;
+    function getCreditedAmount(address _address) public view returns (uint);
 }
