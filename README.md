@@ -20,12 +20,12 @@ npm install
 #### Start Ganache
 You will need specific configuration of ganache. So run:
 ```bash
-ganache-cli -l 999999999999 -m "candy maplcake sugar puddi cream honey rich smooth crumble sweet treat" -e 1000 -a 30
+ganache-cli -l 999999999999 -m "candy maplcake sugar puddi cream honey rich smooth crumble sweet treat" -e 10000 -a 30
 ```
 This command will create the local test network with the following props:
 1. gas limit = 999999999999
 2. test accounts = 30
-3. ether on each test account = 1000
+3. ether on each test account = 10000
 
 #### Migrate contracts to ganache
 Specific configuration of test network is configured in truffle under the `development_cli` alias.
@@ -35,6 +35,36 @@ So, you need to migrate the contract to this specific network. Hence, run in the
 truffle migrate --network development_cli
 ```
 
+#### Start Oracle Server
+Now server depends on `truffle-contract` npm package, so you need to install it. 
+
+But if you just run `npm install` inside `./src/server`  folder, it will fail.
+
+So first go ahead and open your node modules
+```bash
+cd ./node_modules
+```
+Then remove 
+```bash
+rm -rf web3-providers-ws
+```
+
+Now, go up to you project folder again.
+
+To start oracle server, you will have to change the folder in the Terminal first:
+```bash
+cd ./src/server
+```
+And install the `truffle-contract`
+```bash
+npm install
+```
+
+And start the server as normal Node.js process:
+```bash
+node server.js
+```
+
 #### Start Dapp
 Dapp that will allow you to interact with deployed contracts will be server for you on `localhost:8000`.
 In the project folder run:
@@ -42,22 +72,9 @@ In the project folder run:
 npm run dapp
 ```
 
-#### Start Oracle Server
-To start oracle server, you will have to change the folder in the Terminal first:
-```bash
-cd ./src/server
-```
-Now server depends on `truffle-contract' npm package, so you need to run in the server folder:
-```bash
-npm install
-```
-
-Then start the server as normal Node.js process:
-```bash
-node server.js
-```
-
 __At this point you have set up the system locally, and you are good to go with tests and interactions with UI.__
+
+__CAUTION! After you run automatic tests, please tear down the local system and set it up again for interaction with UI.__
 
 ### Run tests
 __IMPORTANT!__ You need to run the test files as described below. Otherwise, tests may fail due to bugs in the truffle/ganache.
@@ -97,3 +114,5 @@ So if you have created two insurances in the network,
 and you want to search for the first one, then use `1` as Insurance Id in the `Get Insurance` form. 
 
 Same applies to `Buy Insurance`. You need to use integer id of the flight. For first flight in the system the id will be `1`.
+
+P.S. Sorry for all that.
