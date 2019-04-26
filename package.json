@@ -43,5 +43,7 @@
     "webpack-dev-server": "3.1.14",
     "webpack-node-externals": "1.7.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "truffle-contract": "^4.0.12"
+  }
 }

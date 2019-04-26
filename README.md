@@ -1,52 +1,95 @@
-# FlightSurety
+# Flight Surety
+## How to run
+### System Requirements
+1. Node v10.15.3
+2. Ganache CLI v6.4.3 (ganache-core: 2.5.5)
+3. Solidity 0.4.24
+4. Truffle v5.0.11 (core: 5.0.11)
+5. Solidity - 0.4.24 (solc-js)
+6. Web3.js v1.0.0-beta.37
 
-FlightSurety is a sample application project for Udacity's Blockchain course.
+### Setup
+#### Obtain the code
+1. Downwload and unzip this repo to a folder on your machine.
+2. Open Terminal in this folder
+3. Run:
+```bash
+npm install
+```
 
-## Install
+#### Start Ganache
+You will need specific configuration of ganache. So run:
+```bash
+ganache-cli -l 999999999999 -m "candy maplcake sugar puddi cream honey rich smooth crumble sweet treat" -e 1000 -a 30
+```
+This command will create the local test network with the following props:
+1. gas limit = 999999999999
+2. test accounts = 30
+3. ether on each test account = 1000
 
-This repository contains Smart Contract code in Solidity (using Truffle), tests (also using Truffle), dApp scaffolding (using HTML, CSS and JS) and server app scaffolding.
+#### Migrate contracts to ganache
+Specific configuration of test network is configured in truffle under the `development_cli` alias.
 
-To install, download or clone the repo, then:
+So, you need to migrate the contract to this specific network. Hence, run in the project folder:
+```bash
+truffle migrate --network development_cli
+```
 
-`npm install`
-`truffle compile`
+#### Start Dapp
+Dapp that will allow you to interact with deployed contracts will be server for you on `localhost:8000`.
+In the project folder run:
+```bash
+npm run dapp
+```
 
-## Develop Client
+#### Start Oracle Server
+To start oracle server, you will have to change the folder in the Terminal first:
+```bash
+cd ./src/server
+```
 
-To run truffle tests:
+Then start the server as normal Node.js process:
+```bash
+node server.js
+```
 
-`truffle test ./test/flightSurety.js`
-`truffle test ./test/oracles.js`
+__At this point you have set up the system locally, and you are good to go with tests and interactions with UI.__
 
-To use the dapp:
+### Run tests
+__IMPORTANT!__ You need to run the test files as described below. Otherwise, tests may fail due to bugs in the truffle/ganache.
 
-`truffle migrate`
-`npm run dapp`
+___Please, find yourself in the project folder again.___
 
-To view dapp:
+1. Run unit tests for Flight Surety Data Contract
+```bash
+truffle test test/FlightSuretyDataTest.js --network development_cli
+```
 
-`http://localhost:8000`
+2. Run unit tests for Flight Surety App Contract
+```bash
+truffle test test/FlightSuretyAppTest.js --network development_cli
+```
 
-## Develop Server
+3. Run integration tests for Oracle App with FlightSurety
+```bash
+truffle test test/OracleTest.js --network development_cli
+```
 
-`npm run server`
-`truffle test ./test/oracles.js`
+### Interact with UI
+The Dapp has four sections: Contract, Airlines, Flights and Insurances.
 
-## Deploy
+Sections contain forms for the specific resource in the system.
 
-To build dapp for prod:
-`npm run dapp:prod`
+Outcome of each form request outputs to Results section.
 
-Deploy the contents of the ./dapp folder
+__IMPORTANT!__ 
 
+When you try to search the Flight or Insurance in `Get Flight`/ `Get Insurance` forms, you need to use
+the __Id__ of the flight or insurance. 
 
-## Resources
+Ids are integers, starting with 1. 
 
-* [How does Ethereum work anyway?](https://medium.com/@preethikasireddy/how-does-ethereum-work-anyway-22d1df506369)
-* [BIP39 Mnemonic Generator](https://iancoleman.io/bip39/)
-* [Truffle Framework](http://truffleframework.com/)
-* [Ganache Local Blockchain](http://truffleframework.com/ganache/)
-* [Remix Solidity IDE](https://remix.ethereum.org/)
-* [Solidity Language Reference](http://solidity.readthedocs.io/en/v0.4.24/)
-* [Ethereum Blockchain Explorer](https://etherscan.io/)
-* [Web3Js Reference](https://github.com/ethereum/wiki/wiki/JavaScript-API)
+So if you have created two insurances in the network,
+and you want to search for the first one, then use `1` as Insurance Id in the `Get Insurance` form. 
+
+Same applies to `Buy Insurance`. You need to use integer id of the flight. For first flight in the system the id will be `1`.
