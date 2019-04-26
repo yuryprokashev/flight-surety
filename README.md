@@ -76,6 +76,17 @@ __At this point you have set up the system locally, and you are good to go with 
 
 __CAUTION! After you run automatic tests, please tear down the local system and set it up again for interaction with UI.__
 
+To set everything up again, run in the project folder
+```bash
+> ganache-cli -l 999999999999 -m "candy maplcake sugar puddi cream honey rich smooth crumble sweet treat" -e 10000 -a 30
+> truffle migrate --network development_cli
+> cd ./src/server
+> node server.js
+> cd ../..
+> npm run dapp
+```
+Now open the `locallhost:8000` in your browser.
+
 ### Run tests
 __IMPORTANT!__ You need to run the test files as described below. Otherwise, tests may fail due to bugs in the truffle/ganache.
 
