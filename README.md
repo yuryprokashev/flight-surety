@@ -47,6 +47,10 @@ To start oracle server, you will have to change the folder in the Terminal first
 ```bash
 cd ./src/server
 ```
+Now server depends on `truffle-contract' npm package, so you need to run in the server folder:
+```bash
+npm install
+```
 
 Then start the server as normal Node.js process:
 ```bash
