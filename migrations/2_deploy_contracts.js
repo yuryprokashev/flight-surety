@@ -30,4 +30,4 @@ module.exports = function(deployer, network, accounts) {
         }).catch(err =>{
             console.log(err);
         });
-};
+}
