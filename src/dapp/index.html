@@ -34,6 +34,7 @@
         </ul>
     </div>
 </nav>
+
 <!--CONTRACT-->
 <div class="container my-container" id="contract-resource-forms" style="display: block">
     <div class="row">
@@ -42,8 +43,13 @@
             <h3>Operational Status</h3>
             <form>
                 <div class="form-group">
+                    <label class="form">Message Sender</label>
+                    <input type="text" class="form-control" id="operational-status-get-from" placeholder="Enter address of the message sender, if empty, then contract owner will be used">
+                </div>
+                <div class="form-group">
                     <input type="button" class="btn btn-primary" id="operational-status-get" value="Get Status">
                 </div>
+
             </form>
         </div>
         </div>
@@ -62,6 +68,10 @@
                     <input type="text" class="form-control" id="airline-address">
                 </div>
                 <div class="form-group">
+                    <label class="form">Message Sender</label>
+                    <input type="text" class="form-control" id="airline-register-from" placeholder="Enter address of the message sender, if empty, then contract owner will be used">
+                </div>
+                <div class="form-group">
                     <input type="button" class="btn btn-primary" id="airline-register" value="Register Airline">
                 </div>
             </form>
@@ -77,16 +87,20 @@
             <h3>Register Flight</h3>
             <form>
                 <div class="form-group">
+                    <label class="form">Airline Address</label>
+                    <input type="text" class = "form-control" id="register-flight-airline-address">
+                </div>
+                <div class="form-group">
                     <label class="form">Flight Code</label>
                     <input type="text" class="form-control" id="register-flight-flight-code">
                 </div>
                 <div class="form-group">
-                    <label>Airline Address</label>
-                    <input type="text" class = "form-control" id="register-flight-airline-address">
+                    <label class="form">Departure Time</label>
+                    <input type="datetime-local" class = "form-control" id="register-flight-departure">
                 </div>
                 <div class="form-group">
-                    <label>Departure Time</label>
-                    <input type="datetime-local" class = "form-control" id="register-flight-departure">
+                    <label class="form">Message Sender</label>
+                    <input type="text" class="form-control" id="register-flight-from" placeholder="Enter address of the message sender, if empty, then contract owner will be used">
                 </div>
                 <div class="form-group">
                     <input type="button" class="btn btn-primary" id="register-flight" value="Register Flight">
@@ -95,15 +109,29 @@
             <h3>Refresh Flight Status</h3>
             <form>
                 <div class="form-group">
+                    <label class="form">Airline Address</label>
+                    <input type="text" class = "form-control" id="submit-oracle-airline-address">
+                </div>
+                <div class="form-group">
                     <label class="form">Flight Code</label>
-                    <!--<input type="text" class = "form-control" id="flight-number">-->
-                    <select class="form-control" id="flight-code">
-                        <option value="1">SU 1928</option>
-                        <option value="2">LH 4994</option>
-                    </select>
+                    <input type="text" class = "form-control" id="submit-oracle-flight-code">
+                </div>
+                <div class="form-group">
+                    <label class="form">Departure Time</label>
+                    <input type="datetime-local" class = "form-control" id="submit-oracle-departure">
                 </div>
                 <div class="form-group">
                     <input type="button" class="btn btn-primary" id="submit-oracle" value="Refresh">
+                </div>
+            </form>
+            <h3>Get Flight</h3>
+            <form>
+                <div class="form-group">
+                    <label class="form">Flight Id</label>
+                    <input type="text" class = "form-control" id="get-flight-flight-id">
+                </div>
+                <div class="form-group">
+                    <input type="button" class="btn btn-primary" id="get-flight" value="Get Flight">
                 </div>
             </form>
         </div>
@@ -118,16 +146,16 @@
             <h3>Buy Insurance</h3>
             <form>
                 <div class="form-group">
-                    <label class="form">Flight Code</label>
-                    <!--<input type="text" class = "form-control" id="buy-insurance-flight-code" placeholder="Flight you want to buy insurance">-->
-                    <select class="form-control" id="buy-insurance-flight-code">
-                        <option value="1">SU 1928</option>
-                        <option value="2">LH 4994</option>
-                    </select>
+                    <label class="form">Flight Id</label>
+                    <input type="text" class = "form-control" id="buy-insurance-flight-code" placeholder="Flight Id (not flight code) for which you want to buy insurance">
                 </div>
                 <div class="form-group">
-                    <label>Insurance Premium (Ether)</label>
+                    <label class="form">Insurance Premium (Ether)</label>
                     <input type="number" class = "form-control" id="buy-insurance-paid-amount">
+                </div>
+                <div class="form-group">
+                    <label class="form">Message Sender (Passenger)</label>
+                    <input type="text" class="form-control" id="buy-insurance-from" placeholder="Enter address of the message sender, if empty, then contract owner will be used">
                 </div>
                 <div class="form-group">
                     <input type="button" class="btn btn-primary" id="buy-insurance" value="Buy">
@@ -140,7 +168,7 @@
                     <input type="text" class="form-control" id="get-credited-amount-passenger-address">
                 </div>
                 <div class="form-group">
-                    <input type="button" class="btn btn-primary" id="get-creadited-amount" value="Check Amount">
+                    <input type="button" class="btn btn-primary" id="get-credited-amount" value="Check Amount">
                 </div>
             </form>
             <h3>Withdraw credited amount</h3>
@@ -154,7 +182,21 @@
                     <input type="number" class="form-control" id="withdraw-credited-amount-amount">
                 </div>
                 <div class="form-group">
+                    <label class="form">Message Sender (Passenger)</label>
+                    <input type="text" class="form-control" id="withdraw-credited-amount-from" placeholder="Passenger address entered above will be used, when this field is empty">
+                </div>
+                <div class="form-group">
                     <input type="button" class="btn btn-primary" id="withdraw-credited-amount" value="Withdraw Amount">
+                </div>
+            </form>
+            <h3>Get Insurance</h3>
+            <form>
+                <div class="form-group">
+                    <label class="form">Insurance Id</label>
+                    <input type="text" class="form-control" id="get-insurance-id">
+                </div>
+                <div class="form-group">
+                    <input type="button" class="btn btn-primary" id="get-insurance" value="Get Insurance">
                 </div>
             </form>
         </div>

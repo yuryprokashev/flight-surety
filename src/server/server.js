@@ -65,12 +65,12 @@ flightSuretyApp.setProvider(web3Provider);
         });
 })();
 
-const app = express();
-app.get('/api', (req, res) => {
-    res.send({
-      message: 'An API for use with your Dapp!'
-    })
-});
+// const app = express();
+// app.get('/api', (req, res) => {
+//     res.send({
+//       message: 'An API for use with your Dapp!'
+//     })
+// });
 
 // export default app;
 
